@@ -9,7 +9,12 @@ anonymizer = AnonymizerEngine()
 
 def mask_pii(text: str) -> str:
     """
-    Analyzes text to find and mask PII.
+    Analyzes text to find and mask Personally Identifiable Information (PII).
+    using the Microsoft Presidio library.
+
+    This function detects entities like names, emails, and phone numbers and
+    replaces them with placeholders (e.g., <PERSON>).
+
     :param text: The original text to be anonymized.
     :return: Text with PII masked.
     """
