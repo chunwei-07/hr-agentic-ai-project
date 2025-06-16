@@ -1,0 +1,18 @@
+[project]
+name = "hr-agent-project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "faiss-cpu>=1.11.0",
+    "google-genai>=1.20.0",
+    "langchain>=0.3.25",
+    "langchain-community>=0.3.25",
+    "langchain-google-genai>=2.1.5",
+    "pip>=25.1.1",
+    "presidio-analyzer>=2.2.358",
+    "presidio-anonymizer>=2.2.358",
+    "pypdf>=5.6.0",
+    "python-dotenv>=1.1.0",
+]
