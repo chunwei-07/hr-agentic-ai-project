@@ -24,8 +24,9 @@ def seed_database():
         cand1 = Candidate(name="John Doe", experience_years=8, skills_string="Python,FastAPI,Docker,PostgreSQL,AWS")
         cand2 = Candidate(name="Jane Smith", experience_years=2, skills_string="Python,SQL,Flask,Tableau")
         cand3 = Candidate(name="Peter Jones", experience_years=6, skills_string="Python,Django,React,AWS")
+        cand4 = Candidate(name="Sam Ray", experience_years=10, skills_string="Project Management,Leadership")
 
-        session.add_all([job1, job2, cand1, cand2, cand3])
+        session.add_all([job1, job2, cand1, cand2, cand3, cand4])
         session.commit()  # Commit first to assign IDs
 
         # --- Create the relationships (Job Applications) ---
@@ -39,8 +40,11 @@ def seed_database():
         # Peter Jones applies for the Senior Python Developer job
         app4 = JobApplication(job_id=job1.id, candidate_id=cand3.id, status="Rejected")
 
+        # Sam Ray applies for Senior Python Developer job
+        app5 = JobApplication(job_id=job1.id, candidate_id=cand4.id, status="Applied")
+
         # Now add JobApplications with IDs set
-        session.add_all([app1, app2, app3, app4])
+        session.add_all([app1, app2, app3, app4, app5])
         session.commit()
 
     print("--- Database seeding complete! ---")

@@ -18,6 +18,40 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",
                              google_api_key=google_api_key,
                              temperature=0.1)
 
+# We will add a "few-shot" example to improve the output quality.
+FEW_SHOT_EXAMPLE = """
+Example Input:
+Job Title: UI/UX Designer
+Required Experience: 3 years
+Required Skills: Figma, User Research, Prototyping
+
+Candidate Profiles:
+Candidate ID: CAND_EX1
+Experience: 5 years
+Skills: Figma, Prototyping, Adobe XD, User Interviews
+
+Candidate ID: CAND_EX2
+Experience: 2 years
+Skills: Figma, HTML, CSS
+
+Example Output:
+{
+  "job_title": "UI/UX Designer",
+  "ranked_candidates": [
+    {
+      "candidate_id": "CAND_EX1",
+      "score": 9,
+      "justification": "Strong candidate. Exceeds experience requirement and possesses all key skills, including the crucial 'User Research' (as User Interviews)."
+    },
+    {
+      "candidate_id": "CAND_EX2",
+      "score": 5,
+      "justification": "Weak match. Lacks the required experience and the critical 'User Research' skill."
+    }
+  ]
+}
+"""
+
 def candidate_matcher_agent(job_details: JobDetails, candidate_profiles: List[CandidateDetails]) -> ScreeningReport:
     """
     Compares the job to candidates and returns a ranked list with justifications.
@@ -33,28 +67,41 @@ def candidate_matcher_agent(job_details: JobDetails, candidate_profiles: List[Ca
     parser = PydanticOutputParser(pydantic_object=ScreeningReport)
 
     prompt_template = """
-    You are an expert HR recruiting manager. Your task is to analyze a job description and a list of candidates, then rank them based on suitability.
+    You are a meticulous and unbiased expert HR recruitment manager. Your primary goal is to provide a quantitative and
+    qualitative assessment of candidates based strictly on the information provided.
+
+    **Role and Goal:**
+    Analyze the provided job description and candidate profiles. Rank the candidates based on their suitability for the role.
+
+    **Constraints:**
+    - Base your assessment ONLY on the information given. Do not infer skills or experience that are not explicitly mentioned.
+    - The score must be an integer between 1 and 10.
+    - Justifications must be brief (1-2 sentences) and directly reference the job requirements.
+    - Adhere strictly to the JSON output format provided.
+
+    **Here is an example of the expected input and output format:**
+    {few_shot_example}
+
+    **Now, perform the analysis for the following real request:**
 
     **Job Description Details:**
     Title: {job_title}
     Required Experience: {required_experience} years
     Required Skills: {required_skills}
 
-    **Candidate Profiles:**
+    **Candidate Profiles to Analyze:**
     {candidate_profiles}
 
-    **Instructions:**
-    1. Carefully review each candidate's profile against the job requirements.
-    2. Assign a suitability score from 1 to 10, where 10 is a perfect match. Consider both skills overlap and years of experience. A candidate with all required skills and equal or greater experience should score highly.
-    3. Provide a concise, 1-2 sentence justification for your score, highlighting key strengths or weaknesses.
-    4. Return a ranked list of all candidates from best to worst match.
-
+    **Output JSON:**
     {format_instructions}
     """
 
     prompt = ChatPromptTemplate.from_template(
         template=prompt_template,
-        partial_variables={"format_instructions": parser.get_format_instructions()}
+        partial_variables={
+            "format_instructions": parser.get_format_instructions(),
+            "few_shot_example": FEW_SHOT_EXAMPLE
+        }
     )
 
     chain = prompt | llm | parser
