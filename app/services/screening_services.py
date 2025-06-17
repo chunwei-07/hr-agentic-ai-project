@@ -128,6 +128,7 @@ def run_screening_pipeline_for_job(job_id: int):
         # --- Step 5: Print the final report ---
         print(f"\n{'='*20} FINAL REPORT FOR '{job.title}' {'='*20}")
         print(final_report.model_dump_json(indent=2))
+        return final_report
 
 
 if __name__ == "__main__":
