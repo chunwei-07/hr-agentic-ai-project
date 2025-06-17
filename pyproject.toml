@@ -15,4 +15,5 @@ dependencies = [
     "presidio-anonymizer>=2.2.358",
     "pypdf>=5.6.0",
     "python-dotenv>=1.1.0",
+    "sqlmodel>=0.0.24",
 ]
