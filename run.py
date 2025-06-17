@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
-# from app.services.screening_services import run_screening_pipeline
-from app.services.rag_service import load_and_build_vector_store, create_rag_chain
+from app.services.screening_services import run_screening_pipeline_for_job
+from scripts.seed_db import seed_database
 
 def main():
     # Load environment variables
@@ -9,33 +9,12 @@ def main():
     if "GOOGLE_API_KEY" not in os.environ:
         raise ValueError("GOOGLE_API_KEY not found in .env file. Please add it.")
 
-    # Screening pipeline 
-    # run_screening_pipeline()
+    # Ensure the database is seeded
+    print("--- Ensuring database is seeded ---")
+    seed_database()
 
-    # --- Run the new RAG Q&A System ---
-    print("--- Initializing RAG Q&A System ---")
-
-    # 1. Load resumes and build the vector store
-    # This should only happen once when the app starts
-    load_and_build_vector_store()
-
-    # 2. Create the RAG Chain
-    rag_chain = create_rag_chain()
-
-    # 3. Ask some questions!
-    print("\n--- Ready to answer questions about candidates. ---")
-
-    questions = [
-        "Which candidate has experience with Docker and cloud services?",
-        "How many years of experience does John Doe have?",
-        "Who is mroe junior and has experience with Flask?",
-        "Is there a candidate with experience in project management?"
-    ]
-
-    for question in questions:
-        print(f"\n❓Question: {question}")
-        response = rag_chain.invoke({"input": question})
-        print(f"✅Answer: {response['answer']}")
+    # --- Run the full, end-to-end pipeline ---
+    run_screening_pipeline_for_job(job_id=1)
 
 if __name__ == "__main__":
     main()

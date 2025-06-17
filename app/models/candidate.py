@@ -15,5 +15,7 @@ class Candidate(SQLModel, table=True):
 
 class CandidateDetails(SQLModel):
     """Pydantic-like model for structured data from LLM after screening."""
+    candidate_id: Optional[str] = None
     extracted_skills: List[str]
     experience_years: int
+    pii_masked: Optional[bool] = None
