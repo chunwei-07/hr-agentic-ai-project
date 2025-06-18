@@ -75,7 +75,7 @@ The numbers in the diagram correspond to the following sequence of events for a 
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/YOUR_USERNAME/hr-agentic-ai-project.git
+    git clone https://github.com/chunwei-07/hr-agentic-ai-project.git
     cd hr-agentic-ai-project
     ```
 
