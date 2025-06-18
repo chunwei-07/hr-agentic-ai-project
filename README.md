@@ -4,7 +4,46 @@ This project is a sophisticated, agentic AI system designed to automate the init
 
 ![System Architecture](architecture.png)
 
----
+## System Architecture & Workflow
+
+### Component Breakdown
+- **User / Client App (Blue):** The entry point for any request. This can be a human user interacting with the API documentation or another automated system.
+- **FastAPI Gateway (Blue):** The web server that receives all incoming HTTP requests. It handles API routing, data validation, and response formatting, but delegates the core business logic.
+- **Screening Service (Orchestrator):** The central brain of the application. It manages the end-to-end workflow, coordinating between the database and the various AI agents.
+- **Data Stores (Yellow):**
+  - **SQLite Database:** The primary relational database for storing persistent, structured data like job information and candidate profiles.
+  - **FAISS Vector Store:** A specialized database used to store vector embeddings of resumes for efficient similarity searched (used by the RAG Q&A functionality).
+- **Agentic Core (Green):** The specialized AI workers that perform specific tasks.
+  - **Job Parser, Resumer Screener, Candidate Matcher Agents:** Each agent is an LLM-powered chain responsible for a single, well-defined task.
+  - **PII Masker:** A critical utility used by the `Resume Screener` to anonymize data before it is processed by the LLM, ensuring privacy and compliance.
+- **Caching & External Services (Red):**
+  - **Langchain Cache:** A performance-enhancing layer that intercepts all LLM calls. It stores the results of previous calls to avoid redundant, costly, and time-consuming API requests.
+  - **Google Gemini API:** The external Large Language Model that provides the core reasoning and language understanding capabilities for all agents.
+
+## Step-by-Step Workflow
+
+The numbers in the diagram correspond to the following sequence of events for a typical screening request:
+
+1. **HTTP Request:** The process begins when the **User / Client App** sends a `POST` request to a specific endpoint on the **FastAPI Gateway**, for example, `/screen/1`.
+
+2. **Triggers Pipeline:** The Gateway validates the request and calls the **Screening Service (Orchestrator)**, passing along the `job_id`.
+
+3. **Fetches Job/Applicants:** The Orchestrator queries the **SQLite Database** to retrieve the details for the specified job and a list of all candidates who have applied for it.
+
+4. **Calls Agents in Sequence**: The Orchestrator begins the multi-agent workflow:
+    - **(4a)** It sequentially invokes the `Job Parser Agent`, `Resume Screener Agent`, and finally the `Candidate Matcher Agent`.
+    - **(4b)** During its turn, the `Resume Screener Agent` utilizes the **PII Masker** utility to anonymize the candidate's data before processing.
+
+5. **The "Thinking" Process (LLM Calls):** Each time an agent needs to perform its task, it makes an "LLM Call".
+    - **(5a)** The request is first sent to the **LangChain Cache**.
+    - If the exact same request has been made before, the cache returns the stored result instantly.
+    - If it's a new request (a "cache miss"), the cache forwards the request to the external **Google Gemini API**.
+    - **(5c)** The Gemini API returns the result, which is passed back to the agent and stored in the cache for future use.
+
+6. **Returns Report:** The workflow concludes as the final result is passed back up the chain.
+    - **(6a)** The `Candidate Matcher Agent` completes its analysis and returns the final `ScreeningReport` to the **Screening Service**.
+    - **(6b)** The **Screening Service** returns the completed report to the **FastAPI Gateway**.
+    - **(6c)** The **FastAPI Gateway** serializes the report into a JSON format and sends it back to the **User / Client App** as the final **HTTP Response**.
 
 ## 🌟 Key Features
 
@@ -16,8 +55,6 @@ This project is a sophisticated, agentic AI system designed to automate the init
 - **API-driven**: The entire system is exposed via a professional FastAPI web server with automated documentation.
 - **Containerized**: Packaged with Docker for easy, consistent, and portable deployment.
 
----
-
 ## 🛠️ Tech Stack
 
 - **Backend**: Python, FastAPI
@@ -25,8 +62,6 @@ This project is a sophisticated, agentic AI system designed to automate the init
 - **Database**: SQLModel, SQLAlchemy, SQLite
 - **DevOps**: Docker, Docker Compose
 - **Tooling**: Pydantic, Presidio for PII masking
-
----
 
 ## 🚀 Getting Started
 
@@ -57,8 +92,6 @@ This project is a sophisticated, agentic AI system designed to automate the init
     ```
 
 The API will be available at `http://127.0.0.1:8000`.
-
----
 
 ## Usage
 
