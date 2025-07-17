@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -5,6 +6,7 @@ import os
 
 from app.core.caching import setup_langchain_cache
 from app.services.screening_services import run_screening_pipeline_for_job
+from app.services.rag_service import create_rag_chain, load_and_build_vector_store
 from scripts.seed_db import seed_database
 from app.models.report import ScreeningReport
 
@@ -17,6 +19,7 @@ async def lifespan(app: FastAPI):
     if "GOOGLE_API_KEY" not in os.environ:
         raise RuntimeError("GOOGLE_API_KEY not found in .env file.")
     
+    load_and_build_vector_store()
     setup_langchain_cache()
     seed_database()
 
@@ -33,6 +36,13 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# --- Pydantic Models ---
+class QuestionRequest(BaseModel):
+    question: str
+
+class AnswerResponse(BaseModel):
+    answer: str
 
 
 # --- API Endpoints ---
@@ -55,4 +65,19 @@ def screen_candidates_for_job(job_id: int):
         return report
     except Exception as e:
         print(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.post("/ask_rag", response_model=AnswerResponse)
+def ask_rag_question(request: QuestionRequest):
+    """
+    Asks a question to the RAG system about the indexed candidate resumes.
+    """
+    try:
+        print(f"--- Received RAG question: {request.question} ---")
+        rag_chain = create_rag_chain()
+        response = rag_chain.invoke({"input": request.question})
+        return AnswerResponse(answer=response['answer'])
+    except Exception as e:
+        print(f"An error occurred in RAG chain: {e}")
         raise HTTPException(status_code=500, detail=str(e))
