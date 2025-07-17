@@ -9,42 +9,42 @@ from app.agents.resume_screener import resume_screener_agent
 from app.agents.candidate_matcher import candidate_matcher_agent
 
 
-# --- MOCK DATA ---
-JOB_DESCRIPTION = """
-Position: Senior Python Developer
-Location: Remote
-Experience: 5+ years
+# # --- MOCK DATA ---
+# JOB_DESCRIPTION = """
+# Position: Senior Python Developer
+# Location: Remote
+# Experience: 5+ years
 
-Responsibilities:
-- Design and develop scalable backend services.
-- Work with databases like PostgreSQL and Redis.
-- Create and maintain CI/CD pipelines.
-- Mentor junior developers.
+# Responsibilities:
+# - Design and develop scalable backend services.
+# - Work with databases like PostgreSQL and Redis.
+# - Create and maintain CI/CD pipelines.
+# - Mentor junior developers.
 
-Required Skills:
-- Expert in Python and FastAPI.
-- Strong knowledge of SQL and database design.
-- Experience with Docker and Kubernetes.
-"""
+# Required Skills:
+# - Expert in Python and FastAPI.
+# - Strong knowledge of SQL and database design.
+# - Experience with Docker and Kubernetes.
+# """
 
-RESUME_1 = """
-John Doe | Senior Software Engineer
-Email: john.doe@email.com | Phone: 123-456-7890
+# RESUME_1 = """
+# John Doe | Senior Software Engineer
+# Email: john.doe@email.com | Phone: 123-456-7890
 
-Summary:
-A seasoned engineer with 8 years of experience in backend development, 
-specializing in Python, Django, and FastAPI. Proficient with Docker, 
-cloud services (AWS), and PostgreSQL.
-"""
+# Summary:
+# A seasoned engineer with 8 years of experience in backend development, 
+# specializing in Python, Django, and FastAPI. Proficient with Docker, 
+# cloud services (AWS), and PostgreSQL.
+# """
 
-RESUME_2 = """
-Jane Smith | Software Developer
-Email: jane.s@email.com
+# RESUME_2 = """
+# Jane Smith | Software Developer
+# Email: jane.s@email.com
 
-Recent graduate with a passion for Python development. 
-Completed a project using Flask and SQL. Eager to learn
-about cloud technologies and scalable systems. 2 years of internship experience.
-"""
+# Recent graduate with a passion for Python development. 
+# Completed a project using Flask and SQL. Eager to learn
+# about cloud technologies and scalable systems. 2 years of internship experience.
+# """
 
 
 # def run_screening_pipeline():
