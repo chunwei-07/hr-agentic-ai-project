@@ -6,7 +6,7 @@ import os
 
 from app.core.caching import setup_langchain_cache
 from app.services.screening_services import run_screening_pipeline_for_job
-from app.services.rag_service import create_rag_chain, load_and_build_vector_store
+from app.services.rag_service import create_rag_chain, load_and_build_vector_store, create_text_rag_chain
 from scripts.seed_db import seed_database
 from app.models.report import ScreeningReport
 
@@ -44,6 +44,10 @@ class QuestionRequest(BaseModel):
 class AnswerResponse(BaseModel):
     answer: str
 
+class DrillDownRequest(BaseModel):
+    context_text: str
+    question: str
+
 
 # --- API Endpoints ---
 @app.get("/")
@@ -80,4 +84,19 @@ def ask_rag_question(request: QuestionRequest):
         return AnswerResponse(answer=response['answer'])
     except Exception as e:
         print(f"An error occurred in RAG chain: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/ask_drill_down", response_model=AnswerResponse)
+def ask_drill_down_question(request: DrillDownRequest):
+    """
+    Performs a RAG query on a specific provided text (e.g., a single resume).
+    This allows for a "drill-down" analysis.
+    """
+    try:
+        print(f"--- Received drill-down question: {request.question} ---")
+        text_rag_chain = create_text_rag_chain(request.context_text)
+        response = text_rag_chain.invoke({"input": request.question})
+        return AnswerResponse(answer=response['answer'])
+    except Exception as e:
+        print(f"An error occurred in drill-down chain: {e}")
         raise HTTPException(status_code=500, detail=str(e))

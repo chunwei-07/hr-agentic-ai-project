@@ -96,3 +96,38 @@ def create_rag_chain():
     retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
     return retrieval_chain
+
+def create_text_rag_chain(text: str):
+    """
+    Creates a temporary, in-memory RAG chain for a specific piece of text.
+    """
+    print("--- Creating temporary RAG chain for specific text ---")
+
+    # 1. Split the provided text into chunks
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    docs = text_splitter.create_documents([text]) # create_documents expects a list
+
+    # 2. Create embeddings
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    
+    # 3. Create a temporary, in-memory vector store from this one document
+    temp_vector_store = FAISS.from_documents(docs, embeddings)
+    temp_retriever = temp_vector_store.as_retriever()
+
+    # 4. Use the same prompt and LLM as our other RAG chain
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",
+                                 google_api_key=google_api_key,
+                                 temperature=0.1)
+    prompt = ChatPromptTemplate.from_template("""
+    You are an expert analyst. Use the following retrieved context to answer the question.
+    If you don't know the answer, just say that. Be concise.
+
+    Context: {context}
+    Question: {input}
+    Answer:
+    """)
+    
+    document_chain = create_stuff_documents_chain(llm, prompt)
+    retrieval_chain = create_retrieval_chain(temp_retriever, document_chain)
+    
+    return retrieval_chain

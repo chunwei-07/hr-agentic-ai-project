@@ -125,7 +125,19 @@ def run_screening_pipeline_for_job(job_id: int):
         print("\n--- Generating final screening report... ---")
         final_report = candidate_matcher_agent(parsed_job_details, all_candidate_profiles)
 
-        # --- Step 5: Print the final report ---
+        # --- Step 5: Enrich the report with full resume text from DB ---
+        print("Enriching report with full resume text...")
+        # Create a mapping from candidate_id (CAND_1) to the full DB object
+        applicant_map = {f"CAND_{app.id}": app for app in applicants}
+
+        for ranked_candidate in final_report.ranked_candidates:
+            # Look up the original applicant from the DB
+            original_applicant = applicant_map.get(ranked_candidate.candidate_id)
+            if original_applicant:
+                # Add their full resume text to the report
+                ranked_candidate.full_resume_text = original_applicant.resume_text
+
+        # --- Step 6: Print the final report ---
         print(f"\n{'='*20} FINAL REPORT FOR '{job.title}' {'='*20}")
         print(final_report.model_dump_json(indent=2))
         return final_report

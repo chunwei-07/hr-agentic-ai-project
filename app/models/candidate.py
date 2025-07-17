@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel, Relationship, Column, TEXT
 from .job import Job, JobApplication
 
 class Candidate(SQLModel, table=True):
@@ -9,6 +9,7 @@ class Candidate(SQLModel, table=True):
     experience_years: int
     # In a real app, skills might be a seperate table, but a simple string is fine for now
     skills_string: str
+    resume_text: str = Field(sa_column=Column(TEXT))
 
     # Defines the relationship back to Job
     jobs: List[Job] = Relationship(back_populates="candidates", link_model=JobApplication)
