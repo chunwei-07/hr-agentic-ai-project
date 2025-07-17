@@ -1,6 +1,7 @@
-# Agentic HR Screening System API
+# Agentic HR Screening & Analysis Platform
+This project is a sophisticated, dual-purpose AI platform designed to accelerate and enhance the HR recruitment process. It moves beyond a single tool, offering two distinct, powerful workflows to tackle common recruiting challenges - whether dealing with structured data in a modern HR system or unstructured documents in a simple folder.
 
-This project is a sophisticated, agentic AI system designed to automate the initial phases of the HR recruitment process. It uses a multi-agent approach with Large Language Models (LLMs) to parse job descriptions, screen candidate resumes, and provide a ranked shortlist of suitable candidates.
+The entire system is built as a professional, containerized web service with a clear API.
 
 ![System Architecture](architecture.png)
 
@@ -20,48 +21,32 @@ This project is a sophisticated, agentic AI system designed to automate the init
   - **Langchain Cache:** A performance-enhancing layer that intercepts all LLM calls. It stores the results of previous calls to avoid redundant, costly, and time-consuming API requests.
   - **Google Gemini API:** The external Large Language Model that provides the core reasoning and language understanding capabilities for all agents.
 
-## Step-by-Step Workflow
+## 🚀 The Two Core Workflows
+This platform offers two primary solutions, each designed for a different business need:
 
-The numbers in the diagram correspond to the following sequence of events for a typical screening request:
+### 1. The Integrated Screening & Drill-Down Workflow
++  **Problem Solved:** For the organized company with an existing HR database (ATS/HRIS). How do you intelligently rank existing applicants and then perform deep, nuanced analysis on the top candidates?
++  **Our Solution:** A multi-step process that first uses an AI agent system to score and rank all applicants for a job from the database. The API response then includes the full resume text of top candidates, allowing an HR manager to immediately use our "Drill-Down" API to ask specific, context-aware questions about a single candidate's experience.
+### 2. The Broad RAG Discovery Workflow
++  **Problem Solved:** For the HR manager who has a folder full of unstructured PDF resumes. How do you quickly find relevant candidates without reading every single document?
++  **Our Solution:** A powerful Retrieval-Augmented Generation (RAG) system that ingests an entire directory of PDFs. It allows the user to ask broad, natural language questions across the entire candidate pool (e.g., "Which candidates have experience with cloud platforms?") to discover talent quickly.
 
-1. **HTTP Request:** The process begins when the **User / Client App** sends a `POST` request to a specific endpoint on the **FastAPI Gateway**, for example, `/screen/1`.
-
-2. **Triggers Pipeline:** The Gateway validates the request and calls the **Screening Service (Orchestrator)**, passing along the `job_id`.
-
-3. **Fetches Job/Applicants:** The Orchestrator queries the **SQLite Database** to retrieve the details for the specified job and a list of all candidates who have applied for it.
-
-4. **Calls Agents in Sequence**: The Orchestrator begins the multi-agent workflow:
-    - **(4a)** It sequentially invokes the `Job Parser Agent`, `Resume Screener Agent`, and finally the `Candidate Matcher Agent`.
-    - **(4b)** During its turn, the `Resume Screener Agent` utilizes the **PII Masker** utility to anonymize the candidate's data before processing.
-
-5. **The "Thinking" Process (LLM Calls):** Each time an agent needs to perform its task, it makes an "LLM Call".
-    - **(5a)** The request is first sent to the **LangChain Cache**.
-    - If the exact same request has been made before, the cache returns the stored result instantly.
-    - If it's a new request (a "cache miss"), the cache forwards the request to the external **Google Gemini API**.
-    - **(5c)** The Gemini API returns the result, which is passed back to the agent and stored in the cache for future use.
-
-6. **Returns Report:** The workflow concludes as the final result is passed back up the chain.
-    - **(6a)** The `Candidate Matcher Agent` completes its analysis and returns the final `ScreeningReport` to the **Screening Service**.
-    - **(6b)** The **Screening Service** returns the completed report to the **FastAPI Gateway**.
-    - **(6c)** The **FastAPI Gateway** serializes the report into a JSON format and sends it back to the **User / Client App** as the final **HTTP Response**.
 
 ## 🌟 Key Features
-
-- **Multi-Agent Architecture**: Separate agents for parsing, screening, and matching, allowing for specialized and robust logic.
-- **Intelligent Parsing**: Uses an LLM (Google Gemini) to extract structured data from unstructured job descriptions and resumes.
-- **Ethical by Design**: Implements automatic PII (Personally Identifiable Information) masking to ensure candidate privacy and PDPA/GDPR compliance.
-- **Database Integration**: Stores job and candidate data in a relational database (SQLite) using SQLModel.
-- **Performance Optimized**: Features a built-in cache to dramatically speed up repeated LLM calls, saving time and cost.
-- **API-driven**: The entire system is exposed via a professional FastAPI web server with automated documentation.
-- **Containerized**: Packaged with Docker for easy, consistent, and portable deployment.
++  **Dual-Workflow System:** Tackles both structured database screening and unstructured document discovery.
++  **Advanced Agentic AI:** A multi-agent system (using LangChain & Gemini-2.0-Flash) collaborates to parse, screen, and perform complex reasoning for candidate matching.
++  **Context-Aware "Drill-Down":** A unique feature that allows users to seamlessly transition from a high-level ranked list to an in-depth "chat" with a single candidate's resume.
++  **Ethical & Compliant:** Features automatic PII (Personally Identifiable Information) masking by default to ensure candidate privacy.
++  **Optimized & Scalable:** A persistent caching layer drastically reduces API latency and costs, and the entire application is containerized with Docker for easy deployment.
++  **Professional API with Interactive Docs:** Built with FastAPI, providing a high-performance backend and automatic, interactive documentation.
++  **Robust Data Foundation:** Uses SQLModel and SQLAlchemy to interact with a relational database (SQLite), making it easily adaptable to production systems like PostgreSQL.
 
 ## 🛠️ Tech Stack
-
 - **Backend**: Python, FastAPI
 - **AI/LLM**: LangChain, Google Gemini-2.0-Flash
 - **Database**: SQLModel, SQLAlchemy, SQLite
 - **DevOps**: Docker, Docker Compose
-- **Tooling**: Pydantic, Presidio for PII masking
+- **Tooling**: Pydantic, Presidio for PII masking, FAISS (for in-memory vector search)
 
 ## 🚀 Getting Started
 
@@ -90,6 +75,10 @@ The numbers in the diagram correspond to the following sequence of events for a 
     ```bash
     docker-compose up --build
     ```
+    OR ALTERNATIVELY:
+    ```bash
+    uvicorn app.main:app --reload
+    ```
 
 The API will be available at `http://127.0.0.1:8000`.
 
@@ -97,23 +86,26 @@ The API will be available at `http://127.0.0.1:8000`.
 
 The best way to interact with the API is through the auto-generated documentation.
 
-1.  Navigate to **`http://127.0.0.1:8000/docs`** in your browser.
+**Navigate to `http://127.0.0.1:8000/docs` in your browser.**
 
-2.  Use the `POST /screen/{job_id}` endpoint to run the screening pipeline.
-    -   Try `job_id: 1` to screen for the "Senior Python Developer" role.
-    -   The system will process the applicants from the database and return a ranked JSON report.
+### Demo 1: The Integrated Screening & Drill-Down Workflow
+This demo shows how to analyze candidates from a structured database.
 
-### Example Response
+**Step 1: Get Ranked Candidates**
++  Go to the `POST /screen/{job_id}` endpoint.
++  Enter `1` for the `job_id` and click "Execute."
++  **Observe:** The system returns a ranked list of candidates for the "Senior Python Developer" role. Notice the top candidate's score, justification, and the included `full_resume_text`.
 
-```json
-{
-  "job_title": "Senior Python Developer",
-  "ranked_candidates": [
-    {
-      "candidate_id": "CAND_1",
-      "score": 9,
-      "justification": "Excellent match. Exceeds experience requirement and possesses all key skills including FastAPI and Docker."
-    },
-    // ... other candidates
-  ]
-}
+**Step 2: Perform Drill-Down Analysis**
++  Copy the `full_resume_text` of the top candidate (John Doe).
++  Go to the `POST /ask_drill_down` endpoint.
++  Paste the resume text into the `context_text` field.
++  In the `question` field, ask a specific question like: `"What was the specific result of the Django migration project he led?"`
++  **Observe:** The AI reads only the provided text and gives a precise answer: `"The project resulted in a 40% performance increase."`
+
+### Demo 2: The Broad RAG Discovery Workflow
+This demo shows how to find talent from a folder of unstructured PDFs.
+
++  Go to the `POST /ask_rag` endpoint.
++  In the `request body`, enter a question to search across all PDF resumes, such as: `"Who has experience with Flask and SQL?"`
++  **Observe:** The system provides a direct answer by searching its vector index of all the documents, identifying Jane Smith as the relevant candidate.

@@ -3,6 +3,38 @@ from app.core.database import engine
 from app.models.job import Job
 from app.models.candidate import Candidate, JobApplication
 
+# --- MOCK DATA ---
+RESUME_1_TEXT = """
+John Doe | Senior Software Engineer
+Email: john.doe@email.com | Phone: 123-456-7890
+Summary: A seasoned engineer with 8 years of experience in backend development, 
+specializing in Python, Django, and FastAPI. Proficient with Docker, 
+cloud services (AWS), and PostgreSQL. Successfully led a project to migrate a monolithic
+Django application to a microservices architecture using FastAPI, resulting in a 40% performance increase.
+"""
+RESUME_2_TEXT = """
+Jane Smith | Software Developer
+Email: jane.s@email.com
+Recent graduate with a passion for Python development. 
+Completed a capstone project building a restaurant recommendation system using Flask and SQL.
+The project involved creating a public-facing API and a simple front-end. Eager to learn
+about cloud technologies and scalable systems. 2 years of internship experience.
+"""
+RESUME_3_TEXT = """
+Peter Jones | Python Developer
+Email: p.jones@email.com
+A detail-oriented developer with 6 years of experience. My primary expertise is in building robust
+data processing pipelines with Python and Django. I have extensive experience with AWS S3 and EC2.
+While I haven't used FastAPI professionally, I am a quick learner.
+"""
+RESUME_4_TEXT = """
+Sam Ray | Senior Project Manager
+Email: sam.r@email.com
+An expert project manager with 10 years of experience. My primary expertise is leading a team
+of 10 people to build a commercial level system that allows my previous company to earn 50% more
+revenue. A rapid learner who is eager to always learn and improve.
+"""
+
 def seed_database():
     print("--- Seeding Database ---")
 
@@ -21,10 +53,10 @@ def seed_database():
         job2 = Job(title="Junior Data Analyst", experience_years_required=1)
 
         # --- Create Candidate objects ---
-        cand1 = Candidate(name="John Doe", experience_years=8, skills_string="Python,FastAPI,Docker,PostgreSQL,AWS")
-        cand2 = Candidate(name="Jane Smith", experience_years=2, skills_string="Python,SQL,Flask,Tableau")
-        cand3 = Candidate(name="Peter Jones", experience_years=6, skills_string="Python,Django,React,AWS")
-        cand4 = Candidate(name="Sam Ray", experience_years=10, skills_string="Project Management,Leadership")
+        cand1 = Candidate(name="John Doe", experience_years=8, skills_string="Python,FastAPI,Docker,PostgreSQL,AWS", resume_text=RESUME_1_TEXT)
+        cand2 = Candidate(name="Jane Smith", experience_years=2, skills_string="Python,SQL,Flask,Tableau", resume_text=RESUME_2_TEXT)
+        cand3 = Candidate(name="Peter Jones", experience_years=6, skills_string="Python,Django,React,AWS", resume_text=RESUME_3_TEXT)
+        cand4 = Candidate(name="Sam Ray", experience_years=10, skills_string="Project Management,Leadership", resume_text=RESUME_4_TEXT)
 
         session.add_all([job1, job2, cand1, cand2, cand3, cand4])
         session.commit()  # Commit first to assign IDs
